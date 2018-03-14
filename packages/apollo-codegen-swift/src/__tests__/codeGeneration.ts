@@ -721,6 +721,31 @@ describe("Swift code generation", () => {
 
       expect(generator.output).toMatchSnapshot();
     });
+
+    it("should not singularize non-list properties", () => {
+      const { operations } = compile(
+        `
+        query SingularDetails {
+          singularlyDetailed {
+            details {
+              details
+            }
+          }
+        }
+      `,
+        miscSchema
+      );
+
+      const selectionSet = (operations["SingularDetails"].selectionSet
+        .selections[0] as Field).selectionSet as SelectionSet;
+
+      generator.structDeclarationForSelectionSet({
+        structName: "SingularDetails",
+        selectionSet
+      });
+
+      expect(generator.output).toMatchSnapshot();
+    });
   });
 
   describe("#typeDeclarationForGraphQLType()", () => {

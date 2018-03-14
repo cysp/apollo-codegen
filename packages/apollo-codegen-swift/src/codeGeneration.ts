@@ -764,7 +764,7 @@ export class SwiftAPIGenerator extends SwiftGenerator<CompilerContext> {
     this.printOnNewline(swift`public var ${propertyName}: ${typeName}`);
     this.withinBlock(() => {
       if (isCompositeType(unmodifiedFieldType)) {
-        const structName = this.helpers.structNameForPropertyName(propertyName);
+        const structName = this.helpers.structNameForPropertyName(propertyName, type);
 
         if (isList(type)) {
           this.printOnNewline(swift`get`);
@@ -981,7 +981,8 @@ export class SwiftAPIGenerator extends SwiftGenerator<CompilerContext> {
             const { name, alias, args, type } = selection;
             const responseKey = selection.alias || selection.name;
             const structName = this.helpers.structNameForPropertyName(
-              responseKey
+              responseKey,
+              type
             );
 
             this.printOnNewline(swift`GraphQLField(`);

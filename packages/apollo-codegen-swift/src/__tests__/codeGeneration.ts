@@ -8,8 +8,11 @@ import {
 } from "graphql";
 
 import { loadSchema } from "apollo-codegen-core/lib/loading";
-const schema = loadSchema(
+const starwarsSchema = loadSchema(
   require.resolve("../../../../__fixtures__/starwars/schema.json")
+);
+const miscSchema = loadSchema(
+  require.resolve("../../../../__fixtures__/misc/schema.json")
 );
 
 import {
@@ -32,6 +35,7 @@ describe("Swift code generation", () => {
 
   function compile(
     source: string,
+    schema: GraphQLSchema = starwarsSchema,
     options: CompilerOptions = {
       mergeInFieldsFromFragmentSpreads: true,
       omitDeprecatedEnumCases: false
@@ -191,6 +195,7 @@ describe("Swift code generation", () => {
           name
         }
       `,
+        starwarsSchema,
         {
           generateOperationIds: true,
           mergeInFieldsFromFragmentSpreads: true,
@@ -299,7 +304,7 @@ describe("Swift code generation", () => {
         generator.propertyAssignmentForField({
           responseKey: "response_key",
           propertyName: "propertyName",
-          type: schema.getType("Droid")
+          type: starwarsSchema.getType("Droid")
         }).source
       ).toBe(
         '"response_key": propertyName.flatMap { (value: Droid) -> ResultMap in value.resultMap }'
@@ -311,7 +316,7 @@ describe("Swift code generation", () => {
         generator.propertyAssignmentForField({
           responseKey: "response_key",
           propertyName: "propertyName",
-          type: new GraphQLNonNull(schema.getType("Droid"))
+          type: new GraphQLNonNull(starwarsSchema.getType("Droid"))
         }).source
       ).toBe('"response_key": propertyName.resultMap');
     });
@@ -321,7 +326,7 @@ describe("Swift code generation", () => {
         generator.propertyAssignmentForField({
           responseKey: "response_key",
           propertyName: "propertyName",
-          type: new GraphQLList(schema.getType("Droid"))
+          type: new GraphQLList(starwarsSchema.getType("Droid"))
         }).source
       ).toBe(
         '"response_key": propertyName.flatMap { (value: [Droid?]) -> [ResultMap?] in value.map { (value: Droid?) -> ResultMap? in value.flatMap { (value: Droid) -> ResultMap in value.resultMap } } }'
@@ -333,7 +338,9 @@ describe("Swift code generation", () => {
         generator.propertyAssignmentForField({
           responseKey: "response_key",
           propertyName: "propertyName",
-          type: new GraphQLList(new GraphQLNonNull(schema.getType("Droid")))
+          type: new GraphQLList(
+            new GraphQLNonNull(starwarsSchema.getType("Droid"))
+          )
         }).source
       ).toBe(
         '"response_key": propertyName.flatMap { (value: [Droid]) -> [ResultMap] in value.map { (value: Droid) -> ResultMap in value.resultMap } }'
@@ -345,7 +352,9 @@ describe("Swift code generation", () => {
         generator.propertyAssignmentForField({
           responseKey: "response_key",
           propertyName: "propertyName",
-          type: new GraphQLNonNull(new GraphQLList(schema.getType("Droid")))
+          type: new GraphQLNonNull(
+            new GraphQLList(starwarsSchema.getType("Droid"))
+          )
         }).source
       ).toBe(
         '"response_key": propertyName.map { (value: Droid?) -> ResultMap? in value.flatMap { (value: Droid) -> ResultMap in value.resultMap } }'
@@ -358,7 +367,7 @@ describe("Swift code generation", () => {
           responseKey: "response_key",
           propertyName: "propertyName",
           type: new GraphQLNonNull(
-            new GraphQLList(new GraphQLNonNull(schema.getType("Droid")))
+            new GraphQLList(new GraphQLNonNull(starwarsSchema.getType("Droid")))
           )
         }).source
       ).toBe(
@@ -716,7 +725,10 @@ describe("Swift code generation", () => {
 
   describe("#typeDeclarationForGraphQLType()", () => {
     it("should generate an enum declaration for a GraphQLEnumType", () => {
-      generator.typeDeclarationForGraphQLType(schema.getType("Episode"), false);
+      generator.typeDeclarationForGraphQLType(
+        starwarsSchema.getType("Episode"),
+        false
+      );
 
       expect(generator.output).toMatchSnapshot();
     });
@@ -741,6 +753,7 @@ describe("Swift code generation", () => {
             }
           }
         `,
+        starwarsSchema,
         {
           generateOperationIds: true,
           mergeInFieldsFromFragmentSpreads: true,
@@ -777,7 +790,7 @@ describe("Swift code generation", () => {
 
     it("should generate a struct declaration for a GraphQLInputObjectType", () => {
       generator.typeDeclarationForGraphQLType(
-        schema.getType("ReviewInput"),
+        starwarsSchema.getType("ReviewInput"),
         false
       );
 
